@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glucoguard AI | Connected Diabetes Support</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">G</div>
+        <div>
+          <h2>Glucoguard</h2>
+          <span>AI CONNECTED CARE</span>
+        </div>
+      </div>
+
+      <div class="patient-mini">
+        <div class="avatar" id="user-avatar">DP</div>
+        <div>
+          <strong id="user-name">Demo Patient</strong>
+          <small id="user-diabetes">Type 1 Diabetes • Demo</small>
+        </div>
+      </div>
+
+      <p class="nav-title">CARE</p>
+      <nav>
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="glucose"><span>◔</span> Glucose</button>
+        <button class="nav-item" data-page="meal"><span>◉</span> Meal Intelligence</button>
+        <button class="nav-item" data-page="insulin"><span>💉</span> Insulin Log</button>
+        <button class="nav-item" data-page="risk"><span>✦</span> AI Risk Engine</button>
+        <button class="nav-item" data-page="timeline"><span>◷</span> Timeline</button>
+      </nav>
+
+      <p class="nav-title">DEVICES & SETTINGS</p>
+      <nav>
+        <button class="nav-item" data-page="cgm"><span>📡</span> CGM Devices</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="prototype-note">
+          <span class="status-dot"></span>
+          <div><b>MVP MODE</b><small>Real data • Rule-based risk</small></div>
+        </div>
+        <button class="safety-link" data-page="safety">🛡 Safety & Privacy</button>
+        <button class="logout-btn" id="logout-btn" style="width: 100%; margin-top: 10px; padding: 8px; background: #ff6b6b; color: white; border: 0; border-radius: 8px; font-size: 9px; cursor: pointer;">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="eyebrow">PATIENT OVERVIEW</p>
+          <h1 id="page-title">Good morning, Demo Patient</h1>
+          <p id="page-subtitle">Your glucose, meal, activity and insulin context in one place.</p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" onclick="showToast('No new notifications')">🔔<i></i></button>
+          <div class="top-profile"><div class="avatar small" id="top-avatar">DP</div><div><b id="top-name">Demo Patient</b><small>Patient account</small></div></div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="dashboard">
+        <div class="hero-grid">
+          <div class="card glucose-card">
+            <div class="card-head">
+              <div><span class="label">CURRENT GLUCOSE</span><h2 id="current-glucose">-- <small>mg/dL</small></h2></div>
+              <span class="pill green" id="glucose-status">● LOADING</span>
+            </div>
+            <div class="trend-line" id="trend-line">Loading trend <span id="last-reading">...</span></div>
+            <div class="chart">
+              <svg viewBox="0 0 700 190" preserveAspectRatio="none" id="glucose-chart">
+                <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2f80ed" stop-opacity=".20"/><stop offset="1" stop-color="#2f80ed" stop-opacity="0"/></linearGradient></defs>
+                <g class="gridlines"><line x1="20" y1="30" x2="680" y2="30"/><line x1="20" y1="80" x2="680" y2="80"/><line x1="20" y1="130" x2="680" y2="130"/><line x1="20" y1="170" x2="680" y2="170"/></g>
+                <polygon fill="url(#area)" points="20,130 95,118 170,125 245,93 320,105 395,78 470,91 545,65 620,73 680,54 680,175 20,175"/>
+                <polyline fill="none" stroke="#2f80ed" stroke-width="4" points="20,130 95,118 170,125 245,93 320,105 395,78 470,91 545,65 620,73 680,54"/>
+                <g fill="#2f80ed"><circle cx="20" cy="130" r="4"/><circle cx="245" cy="93" r="4"/><circle cx="395" cy="78" r="4"/><circle cx="545" cy="65" r="4"/><circle cx="680" cy="54" r="5"/></g>
+              </svg>
+            </div>
+            <div class="axis"><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>NOW</span></div>
+          </div>
+
+          <div class="card risk-card">
+            <div class="card-head"><div><span class="label">AI RISK INSIGHT</span><h3>Short-term hypoglycemia</h3></div><span class="pill green" id="risk-status">LOADING</span></div>
+            <div class="risk-ring"><div id="risk-value"><strong>--</strong><span>risk</span></div></div>
+            <p id="risk-description">Loading ML prediction...</p>
+            <button class="btn secondary full" data-page="risk">ML Model Factors →</button>
+          </div>
+        </div>
+
+        <div class="section-head"><div><h2>Today's context</h2><p>Signals currently available to the risk engine.</p></div><span class="updated">Updated just now</span></div>
+        <div class="context-grid" id="context-grid">
+          <div class="context-card"><div class="context-icon blue">◔</div><div><span>Glucose</span><strong>-- mg/dL</strong><small>Loading...</small></div><b class="check">--</b></div>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="card quick-card">
+            <div class="section-head compact"><div><h2>Quick action</h2><p>Continue your health context.</p></div></div>
+            <div class="quick-actions">
+              <button class="quick-btn" data-page="glucose"><b>◔</b><span>Add glucose</span><small>Manual entry</small></button>
+              <button class="quick-btn" data-page="meal"><b>🍽</b><span>Log meal</span><small>Indian cuisine</small></button>
+              <button class="quick-btn" data-page="insulin"><b>💉</b><span>Log insulin</span><small>Basal / rapid</small></button>
+            </div>
+          </div>
+          <div class="card pipeline-card">
+            <div class="section-head compact"><div><h2>How Glucoguard works</h2><p>Context → insight → safety</p></div></div>
+            <div class="pipeline"><span>DATA</span><i>→</i><span>FEATURES</span><i>→</i><span>RULE ENGINE</span><i>→</i><span>RISK</span><i>→</i><span>SAFETY</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GLUCOSE -->
+      <section class="page" id="glucose">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div class="card">
+            <div class="card-head"><div><span class="label">ADD READING</span><h3>Log glucose</h3></div></div>
+            
+            <div class="form-grid">
+              <div>
+                <label>Glucose value</label>
+                <input type="number" id="glucose-value" placeholder="e.g., 120" step="0.1">
+              </div>
+              <div>
+                <label>Unit</label>
+                <select id="glucose-unit">
+                  <option value="mg/dL">mg/dL</option>
+                  <option value="mmol/L">mmol/L</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div>
+                <label>Time</label>
+                <input type="datetime-local" id="glucose-time">
+              </div>
+              <div>
+                <label>Notes (optional)</label>
+                <input type="text" id="glucose-notes" placeholder="e.g., Before meal">
+              </div>
+            </div>
+
+            <button class="btn primary full" id="add-glucose-btn">Save reading</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><span class="label">STATS TODAY</span><h3>Your metrics</h3></div></div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div style="padding: 12px; background: #151d2b; border: 1px solid var(--line); border-radius: 6px;">
+                <small style="color: var(--muted); font-weight: 500; display: block; margin-bottom: 4px;">Current</small>
+                <strong style="font-size: 20px; color: var(--cyan);" id="stat-current">--</strong>
+                <small style="color: var(--muted);">mg/dL</small>
+              </div>
+              <div style="padding: 12px; background: #151d2b; border: 1px solid var(--line); border-radius: 6px;">
+                <small style="color: var(--muted); font-weight: 500; display: block; margin-bottom: 4px;">24h Average</small>
+                <strong style="font-size: 20px; color: var(--cyan);" id="stat-avg">--</strong>
+                <small style="color: var(--muted);">mg/dL</small>
+              </div>
+              <div style="padding: 12px; background: #151d2b; border: 1px solid var(--line); border-radius: 6px;">
+                <small style="color: var(--muted); font-weight: 500; display: block; margin-bottom: 4px;">Readings</small>
+                <strong style="font-size: 20px; color: var(--cyan);" id="stat-count">--</strong>
+                <small style="color: var(--muted);">today</small>
+              </div>
+              <div style="padding: 12px; background: #151d2b; border: 1px solid var(--line); border-radius: 6px;">
+                <small style="color: var(--muted); font-weight: 500; display: block; margin-bottom: 4px;">Trend</small>
+                <strong style="font-size: 16px; color: var(--cyan);" id="stat-trend">--</strong>
+                <small style="color: var(--muted);"></small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card large-chart">
+          <div class="card-head"><div><span class="label">GLUCOSE HISTORY</span><h3>Trend chart</h3></div></div>
+          <div class="big-chart"><svg viewBox="0 0 900 300" preserveAspectRatio="none" id="glucose-history-chart">
+            <g class="gridlines"><line x1="30" y1="35" x2="870" y2="35"/><line x1="30" y1="105" x2="870" y2="105"/><line x1="30" y1="175" x2="870" y2="175"/><line x1="30" y1="245" x2="870" y2="245"/></g>
+            <polyline fill="none" stroke="#2f80ed" stroke-width="5" points="30,185 105,160 180,174 255,128 330,143 405,104 480,126 555,86 630,102 705,70 780,83 870,54"/>
+            <g fill="#2f80ed"><circle cx="30" cy="185" r="5"/><circle cx="255" cy="128" r="5"/><circle cx="405" cy="104" r="5"/><circle cx="555" cy="86" r="5"/><circle cx="705" cy="70" r="5"/><circle cx="870" cy="54" r="6"/></g>
+          </svg></div>
+        </div>
+      </section>
+
+      <!-- MEAL -->
+      <section class="page" id="meal">
+        <div class="meal-layout">
+          <div class="card form-card">
+            <div class="card-head"><div><span class="label">SEARCH INDIAN FOODS</span><h3>Select a meal</h3></div></div>
+            
+            <div class="form-grid">
+              <div>
+                <label>Food name</label>
+                <input type="text" id="food-search" placeholder="e.g., Biryani, Dosa, Roti..." onkeyup="searchFoods()">
+              </div>
+              <div>
+                <label>Region</label>
+                <select id="food-region" onchange="filterByRegion()">
+                  <option value="">All regions</option>
+                  <option value="North">North India</option>
+                  <option value="South">South India</option>
+                  <option value="East">East India</option>
+                  <option value="West">West India</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="food-results" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--card); display: none;">
+              <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 12px;">Search for foods...</div>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--line);">
+              <div class="form-grid">
+                <div>
+                  <label>Selected food</label>
+                  <input type="text" id="meal-name" placeholder="—" readonly style="background: var(--card); opacity: 0.7;">
+                </div>
+                <div>
+                  <label>Serving</label>
+                  <input type="number" id="meal-servings" placeholder="1" min="0.5" step="0.5" value="1" onchange="calculateCarbs()">
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label>Carbs (g)</label>
+                  <input type="number" id="meal-carbs" placeholder="—" readonly style="background: #1a2d3f; color: var(--cyan); font-weight: bold;">
+                </div>
+                <div style="opacity: 0;"></div>
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label>Time</label>
+                  <input type="datetime-local" id="meal-time">
+                </div>
+                <div>
+                  <label>Notes (optional)</label>
+                  <input type="text" id="meal-notes" placeholder="e.g., With yogurt">
+                </div>
+              </div>
+            </div>
+
+            <button class="btn primary full" id="add-meal-btn">Save meal record</button>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><span class="label">RECENT MEALS</span><h3>Your meal history</h3></div></div>
+            <div id="meal-history">
+              <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 12px;">Loading meals...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INSULIN -->
+      <section class="page" id="insulin">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div class="card">
+            <div class="card-head"><div><span class="label">ADD RECORD</span><h3>Log insulin</h3></div></div>
+            
+            <div class="form-grid">
+              <div>
+                <label>Insulin type</label>
+                <select id="insulin-type">
+                  <option value="Rapid-acting">Rapid-acting</option>
+                  <option value="Basal">Basal</option>
+                  <option value="Long-acting">Long-acting</option>
+                </select>
+              </div>
+              <div>
+                <label>Dose (units)</label>
+                <input type="number" id="insulin-dose" placeholder="e.g., 4" step="0.5">
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div>
+                <label>Time</label>
+                <input type="datetime-local" id="insulin-time">
+              </div>
+              <div>
+                <label>Notes (optional)</label>
+                <input type="text" id="insulin-notes" placeholder="e.g., Before breakfast">
+              </div>
+            </div>
+
+            <button class="btn primary full" id="add-insulin-btn">Save record</button>
+            
+            <div style="background: #1a3a0a; border: 1px solid #2a5a1a; padding: 10px; border-radius: 9px; margin-top: 10px; font-size: 8px; color: #7fcf6a; line-height: 1.5;">
+              🛡 <b>Safety boundary:</b> Glucoguard does not calculate or recommend insulin doses.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><span class="label">RECENT ACTIVITY</span><h3>Insulin history</h3></div></div>
+            <div id="insulin-history">
+              <div style="text-align: center; color: var(--muted); padding: 20px; font-size: 12px;">Loading history...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RISK -->
+      <section class="page" id="risk">
+        <div class="risk-layout">
+          <div class="card risk-hero">
+            <span class="label">CURRENT RISK</span>
+            <div class="large-ring" id="risk-ring-detail"><div><strong>--</strong><small>short-term</small></div></div>
+            <h2 id="risk-title">Calculating...</h2>
+            <p id="risk-details">Loading ML prediction based on your data...</p>
+            <button class="btn primary" id="rerun-risk-btn">Run analysis again</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><span class="label">EXPLAINABILITY</span><h3>Contributing factors</h3></div></div>
+            <div id="risk-factors">
+              <div style="text-align: center; color: #738196; padding: 20px; font-size: 9px;">Loading factors...</div>
+            </div>
+          </div>
+        </div>
+        <div class="card analysis-panel">
+          <div class="card-head"><div><span class="label">MODEL PIPELINE</span><h3>How the insight is generated</h3></div></div>
+          <div class="engine-flow">
+            <div><b>01</b><strong>Data processing</strong><small>Extract user data</small></div><i>→</i>
+            <div><b>02</b><strong>Feature engineering</strong><small>29 ML features</small></div><i>→</i>
+            <div><b>03</b><strong>ML model</strong><small>Logistic Regression</small></div><i>→</i>
+            <div><b>04</b><strong>Risk scoring</strong><small>Probability output</small></div><i>→</i>
+            <div><b>05</b><strong>Safety limits</strong><small>Support only</small></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top: 15px; background: #fff8e6; border: 1px solid #f1d88a;">
+          <div style="font-size: 9px; color: #80651e; line-height: 1.6;">
+            <b>⚠️ Important Disclaimer:</b><br>
+            This risk engine is a <b>prototype ML model</b> for demonstration purposes only. It is NOT:
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              <li>A clinical prediction model (trained on synthetic data)</li>
+              <li>Medically validated or approved</li>
+              <li>A replacement for professional medical advice</li>
+              <li>FDA-approved or certified</li>
+            </ul>
+            Always consult your healthcare provider for medical decisions.
+          </div>
+        </div>
+      </section>
+
+      <!-- TIMELINE -->
+      <section class="page" id="timeline">
+        <div class="card timeline-card">
+          <div class="timeline" id="timeline-events">
+            <div style="text-align: center; color: #738196; padding: 30px; font-size: 9px;">Loading events...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SAFETY -->
+      <section class="page" id="safety">
+        <div class="safety-grid">
+          <div class="card safety-main"><div class="shield">🛡</div><h2>Decision support, not diagnosis</h2><p>Glucoguard is designed to provide contextual insights while keeping medication and clinical decisions with the user and their care team.</p></div>
+          <div class="card"><div class="safety-row"><span>No insulin dosing</span><b class="pill green">DISABLED</b></div><div class="safety-row"><span>No diagnosis</span><b class="pill green">DISABLED</b></div><div class="safety-row"><span>Rule-based risk only</span><b class="pill yellow">PROTOTYPE</b></div><div class="safety-row"><span>Clinical validation</span><b class="pill yellow">ROADMAP</b></div></div>
+        </div>
+      </section>
+
+      <!-- CGM DEVICES -->
+      <section class="page" id="cgm">
+        
+        <div class="card">
+          <div class="card-head"><div><span class="label">CONNECTED DEVICES</span><h3>Your CGM devices</h3></div></div>
+          <div id="cgm-devices-list" style="padding: 15px;">
+            <div style="text-align: center; color: var(--muted); font-size: 9px; padding: 20px;">Loading devices...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div><span class="label">ADD NEW DEVICE</span><h3>Connect a CGM device</h3></div></div>
+          <div style="padding: 15px; display: grid; gap: 12px;">
+            <div>
+              <label style="font-size: 9px; font-weight: bold; color: var(--ink); display: block; margin-bottom: 4px;">Device Type</label>
+              <select id="cgm-device-type" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 11px; background: #151d2b; color: var(--ink);">
+                <option value="">Select device...</option>
+                <option value="dexcom">Dexcom G6/G7</option>
+                <option value="freestyle_libre">Freestyle Libre</option>
+                <option value="medtronic">Medtronic Guardian</option>
+                <option value="tandem">Tandem t:slim</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 9px; font-weight: bold; color: var(--ink); display: block; margin-bottom: 4px;">Device ID</label>
+              <input id="cgm-device-id" type="text" placeholder="Your device serial/ID" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 11px; box-sizing: border-box; background: #151d2b; color: var(--ink);">
+            </div>
+
+            <div>
+              <label style="font-size: 9px; font-weight: bold; color: var(--ink); display: block; margin-bottom: 4px;">Authorization Token</label>
+              <input id="cgm-auth-token" type="password" placeholder="OAuth token from CGM provider" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 11px; box-sizing: border-box; background: #151d2b; color: var(--ink);">
+            </div>
+
+            <button class="btn primary" id="add-cgm-btn" style="width: 100%;">Connect Device</button>
+          </div>
+        </div>
+
+        <div class="card" style="background: #1a2d3f; border: 1px solid #2a4a6a;">
+          <div style="font-size: 9px; color: var(--cyan); line-height: 1.6;">
+            <b>ℹ️ CGM Integration Status:</b><br>
+            This CGM integration is designed to support automatic glucose data sync in the future. Currently:
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              <li>✓ API structure ready for Dexcom integration</li>
+              <li>✓ Freestyle Libre webhook endpoints designed</li>
+              <li>✓ Device management infrastructure in place</li>
+              <li>⏳ Real API integrations coming in Phase 10</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

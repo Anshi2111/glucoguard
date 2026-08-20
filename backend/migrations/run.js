@@ -1,0 +1,9 @@
+const migrate = require('./001_init_schema');
+
+migrate().then(() => {
+  console.log('Migrations complete');
+  process.exit(0);
+}).catch(err => {
+  console.error('Migration error:', err);
+  process.exit(1);
+});

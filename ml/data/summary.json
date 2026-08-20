@@ -1,0 +1,19 @@
+{
+  "duration_days": 21,
+  "glucose_samples": 6048,
+  "insulin_events": 132,
+  "meal_events": 103,
+  "glucose_range": {
+    "min": 50.024072278180356,
+    "max": 162.58828984457625,
+    "mean": 109.94439358743882,
+    "std": 23.26932495048835
+  },
+  "low_glucose_events": 290,
+  "hypoglycemia_threshold": 70,
+  "normal_range": [
+    70,
+    180
+  ],
+  "hyperglycemia_threshold": 180
+}

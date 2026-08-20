@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glucoguard AI | Connected Diabetes Support</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">G</div>
+        <div>
+          <h2>Glucoguard</h2>
+          <span>AI CONNECTED CARE</span>
+        </div>
+      </div>
+
+      <div class="patient-mini">
+        <div class="avatar">DP</div>
+        <div>
+          <strong>Demo Patient</strong>
+          <small>Type 1 Diabetes • Demo</small>
+        </div>
+      </div>
+
+      <p class="nav-title">CARE</p>
+      <nav>
+        <button class="nav-item active" data-page="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-page="glucose"><span>◔</span> Glucose</button>
+        <button class="nav-item" data-page="meal"><span>◉</span> Meal Intelligence</button>
+        <button class="nav-item" data-page="insulin"><span>💉</span> Insulin Log</button>
+        <button class="nav-item" data-page="risk"><span>✦</span> AI Risk Engine</button>
+        <button class="nav-item" data-page="timeline"><span>◷</span> Timeline</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="prototype-note">
+          <span class="status-dot"></span>
+          <div><b>PROTOTYPE MODE</b><small>Simulated demonstration data</small></div>
+        </div>
+        <button class="safety-link" data-page="safety">🛡 Safety & Privacy</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="eyebrow">PATIENT OVERVIEW</p>
+          <h1 id="page-title">Good morning, Demo Patient</h1>
+          <p id="page-subtitle">Your glucose, meal, activity and insulin context in one place.</p>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" onclick="showToast('No new notifications')">🔔<i></i></button>
+          <div class="top-profile"><div class="avatar small">DP</div><div><b>Demo Patient</b><small>Patient account</small></div></div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="dashboard">
+        <div class="hero-grid">
+          <div class="card glucose-card">
+            <div class="card-head">
+              <div><span class="label">CURRENT GLUCOSE</span><h2>112 <small>mg/dL</small></h2></div>
+              <span class="pill green">● STABLE</span>
+            </div>
+            <div class="trend-line">↗ Stable trend <span>Last reading 2 min ago</span></div>
+            <div class="chart">
+              <svg viewBox="0 0 700 190" preserveAspectRatio="none">
+                <defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2f80ed" stop-opacity=".20"/><stop offset="1" stop-color="#2f80ed" stop-opacity="0"/></linearGradient></defs>
+                <g class="gridlines"><line x1="20" y1="30" x2="680" y2="30"/><line x1="20" y1="80" x2="680" y2="80"/><line x1="20" y1="130" x2="680" y2="130"/><line x1="20" y1="170" x2="680" y2="170"/></g>
+                <polygon fill="url(#area)" points="20,130 95,118 170,125 245,93 320,105 395,78 470,91 545,65 620,73 680,54 680,175 20,175"/>
+                <polyline fill="none" stroke="#2f80ed" stroke-width="4" points="20,130 95,118 170,125 245,93 320,105 395,78 470,91 545,65 620,73 680,54"/>
+                <g fill="#2f80ed"><circle cx="20" cy="130" r="4"/><circle cx="245" cy="93" r="4"/><circle cx="395" cy="78" r="4"/><circle cx="545" cy="65" r="4"/><circle cx="680" cy="54" r="5"/></g>
+              </svg>
+            </div>
+            <div class="axis"><span>06:00</span><span>09:00</span><span>12:00</span><span>15:00</span><span>NOW</span></div>
+          </div>
+
+          <div class="card risk-card">
+            <div class="card-head"><div><span class="label">AI RISK INSIGHT</span><h3>Short-term hypoglycemia</h3></div><span class="pill green">LOW</span></div>
+            <div class="risk-ring"><div><strong>LOW</strong><span>risk</span></div></div>
+            <p>No strong short-term risk pattern detected from the current context.</p>
+            <button class="btn secondary full" data-page="risk">Why this insight? →</button>
+          </div>
+        </div>
+
+        <div class="section-head"><div><h2>Today's context</h2><p>Signals currently available to the risk engine.</p></div><span class="updated">Updated just now</span></div>
+        <div class="context-grid">
+          <div class="context-card"><div class="context-icon blue">◔</div><div><span>Glucose</span><strong>112 mg/dL</strong><small>Stable trend</small></div><b class="check">✓</b></div>
+          <div class="context-card"><div class="context-icon orange">🍽</div><div><span>Meal</span><strong>Poha + Egg</strong><small>30–40 g estimated carbs</small></div><b class="check">✓</b></div>
+          <div class="context-card"><div class="context-icon green">🚶</div><div><span>Activity</span><strong>25 min walking</strong><small>Moderate activity</small></div><b class="check">✓</b></div>
+          <div class="context-card"><div class="context-icon purple">💉</div><div><span>Insulin</span><strong>Rapid-acting • 4 units</strong><small>08:10 • Demo log</small></div><b class="check">✓</b></div>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="card quick-card">
+            <div class="section-head compact"><div><h2>Quick action</h2><p>Continue your health context.</p></div></div>
+            <div class="quick-actions">
+              <button class="quick-btn" data-page="meal"><b>📷</b><span>Scan meal</span><small>Indian meal context</small></button>
+              <button class="quick-btn" data-page="insulin"><b>💉</b><span>Log insulin</span><small>Basal / rapid-acting</small></button>
+              <button class="quick-btn" data-page="timeline"><b>◷</b><span>View timeline</span><small>Today's events</small></button>
+            </div>
+          </div>
+          <div class="card pipeline-card">
+            <div class="section-head compact"><div><h2>How Glucoguard works</h2><p>Context → insight → safety</p></div></div>
+            <div class="pipeline"><span>DATA</span><i>→</i><span>FEATURES</span><i>→</i><span>AI ENGINE</span><i>→</i><span>RISK</span><i>→</i><span>SAFETY</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GLUCOSE -->
+      <section class="page" id="glucose">
+        <div class="section-head"><div><h2>Glucose monitoring</h2><p>Demo CGM-style trend view.</p></div><span class="pill green">LIVE DEMO</span></div>
+        <div class="stats-row">
+          <div class="stat card"><span>Current</span><strong>112</strong><small>mg/dL</small></div>
+          <div class="stat card"><span>24h average</span><strong>126</strong><small>mg/dL</small></div>
+          <div class="stat card"><span>Time in range</span><strong>82%</strong><small>demo estimate</small></div>
+          <div class="stat card"><span>Trend</span><strong>↗</strong><small>Stable</small></div>
+        </div>
+        <div class="card large-chart">
+          <div class="card-head"><div><span class="label">GLUCOSE TREND</span><h3>Today</h3></div><select><option>Today</option><option>7 days</option></select></div>
+          <div class="big-chart"><svg viewBox="0 0 900 300" preserveAspectRatio="none">
+            <g class="gridlines"><line x1="30" y1="35" x2="870" y2="35"/><line x1="30" y1="105" x2="870" y2="105"/><line x1="30" y1="175" x2="870" y2="175"/><line x1="30" y1="245" x2="870" y2="245"/></g>
+            <polyline fill="none" stroke="#2f80ed" stroke-width="5" points="30,185 105,160 180,174 255,128 330,143 405,104 480,126 555,86 630,102 705,70 780,83 870,54"/>
+            <g fill="#2f80ed"><circle cx="30" cy="185" r="5"/><circle cx="255" cy="128" r="5"/><circle cx="405" cy="104" r="5"/><circle cx="555" cy="86" r="5"/><circle cx="705" cy="70" r="5"/><circle cx="870" cy="54" r="6"/></g>
+          </svg></div>
+          <div class="chart-legend"><span><i class="legend-dot blue"></i>Glucose</span><span><i class="legend-dot green"></i>Target context</span><span>06:00 — Now</span></div>
+        </div>
+      </section>
+
+      <!-- MEAL -->
+      <section class="page" id="meal">
+        <div class="section-head"><div><h2>Meal Intelligence</h2><p>Indian meal context and carbohydrate estimation.</p></div><span class="pill yellow">BETA</span></div>
+        <div class="meal-layout">
+          <div class="card scanner-card">
+            <div class="scanner">
+              <div class="scanner-frame"></div>
+              <div class="scan-center"><div class="camera">📷</div><strong>Scan your meal</strong><small>Camera / image upload interaction</small></div>
+            </div>
+            <div class="scanner-actions"><button class="btn primary" id="scanBtn">Analyze selected meal</button><button class="btn outline" onclick="showToast('Camera access simulated in prototype')">Upload image</button></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><span class="label">DEMO MEALS</span><h3>Choose an Indian meal</h3></div><span class="small-muted">Select one</span></div>
+            <div class="food-grid">
+              <button class="food selected" data-food="Poha + boiled egg" data-carbs="30–40" data-confidence="64"><span>🥣</span><b>Poha + Egg</b><small>Breakfast</small></button>
+              <button class="food" data-food="2 Idli + Sambar" data-carbs="35–45" data-confidence="62"><span>🍚</span><b>Idli + Sambar</b><small>Breakfast</small></button>
+              <button class="food" data-food="2 Roti + Dal" data-carbs="45–55" data-confidence="67"><span>🫓</span><b>Roti + Dal</b><small>Lunch</small></button>
+              <button class="food" data-food="Dosa + Chutney" data-carbs="40–50" data-confidence="61"><span>🥞</span><b>Dosa + Chutney</b><small>Breakfast</small></button>
+              <button class="food" data-food="Rice + Dal + Sabzi" data-carbs="55–70" data-confidence="55"><span>🍛</span><b>Rice + Dal</b><small>Lunch</small></button>
+              <button class="food" data-food="Paneer + Roti" data-carbs="35–45" data-confidence="69"><span>🥘</span><b>Paneer + Roti</b><small>Dinner</small></button>
+            </div>
+          </div>
+        </div>
+        <div class="card meal-result" id="meal-result">
+          <div class="empty-state"><div>🍽️</div><h3>Meal analysis ready</h3><p>Select a meal and click <b>Analyze selected meal</b>.</p></div>
+        </div>
+      </section>
+
+      <!-- INSULIN -->
+      <section class="page" id="insulin">
+        <div class="section-head"><div><h2>Insulin Log</h2><p>Insulin history is used as context, not as a dosing recommendation.</p></div><span class="pill purple">CONTEXT INPUT</span></div>
+        <div class="insulin-layout">
+          <div class="card form-card">
+            <div class="card-head"><div><span class="label">ADD RECORD</span><h3>Log insulin</h3></div></div>
+            <div class="form-grid">
+              <label>Insulin type<select><option>Rapid-acting</option><option>Basal</option></select></label>
+              <label>Dose (units)<input id="dose" value="4"></label>
+              <label>Time<input type="time" value="08:10"></label>
+              <label>Associated meal<select><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select></label>
+            </div>
+            <button class="btn primary full" onclick="saveInsulin()">Save insulin record</button>
+            <div class="safety-box">🛡 <b>Safety boundary:</b> Glucoguard does not calculate, recommend or change insulin doses.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><span class="label">RECENT ACTIVITY</span><h3>Insulin history</h3></div></div>
+            <div id="insulin-history">
+              <div class="history-row"><span>💉 <b>Rapid-acting</b><small>Breakfast • 08:10</small></span><strong>4 units</strong></div>
+              <div class="history-row"><span>💉 <b>Basal</b><small>Yesterday • 21:00</small></span><strong>10 units</strong></div>
+              <div class="history-row"><span>💉 <b>Rapid-acting</b><small>Yesterday • 19:45</small></span><strong>3 units</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RISK -->
+      <section class="page" id="risk">
+        <div class="section-head"><div><h2>AI Risk Engine</h2><p>Context-aware short-term hypoglycemia risk insight.</p></div><span class="pill green">DEMO OUTPUT</span></div>
+        <div class="risk-layout">
+          <div class="card risk-hero">
+            <span class="label">CURRENT RISK</span>
+            <div class="large-ring"><div><strong>LOW</strong><small>short-term</small></div></div>
+            <h2>Low short-term risk signal</h2>
+            <p>Based on the available demo context, no strong short-term risk pattern is detected.</p>
+            <button class="btn primary" onclick="runRisk()">Run analysis again</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><span class="label">EXPLAINABILITY</span><h3>Why am I seeing this?</h3></div></div>
+            <div class="factor"><div><span>Glucose trend</span><b>High contribution</b></div><div class="progress"><i style="width:78%"></i></div></div>
+            <div class="factor"><div><span>Meal context</span><b>Medium</b></div><div class="progress yellow"><i style="width:62%"></i></div></div>
+            <div class="factor"><div><span>Activity</span><b>Medium</b></div><div class="progress green"><i style="width:55%"></i></div></div>
+            <div class="factor"><div><span>Insulin + timing</span><b>Context signal</b></div><div class="progress cyan"><i style="width:47%"></i></div></div>
+          </div>
+        </div>
+        <div class="card analysis-panel">
+          <div class="card-head"><div><span class="label">MODEL PIPELINE</span><h3>How the insight is generated</h3></div></div>
+          <div class="engine-flow">
+            <div><b>01</b><strong>Data processing</strong><small>Clean inputs</small></div><i>→</i>
+            <div><b>02</b><strong>Feature extraction</strong><small>Context signals</small></div><i>→</i>
+            <div><b>03</b><strong>AI / ML engine</strong><small>Risk pattern</small></div><i>→</i>
+            <div><b>04</b><strong>Risk insight</strong><small>LOW</small></div><i>→</i>
+            <div><b>05</b><strong>Safety</strong><small>Support</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TIMELINE -->
+      <section class="page" id="timeline">
+        <div class="section-head"><div><h2>Health Timeline</h2><p>Glucose, meals, insulin, activity and AI insights in one view.</p></div><span class="updated">Today</span></div>
+        <div class="card timeline-card">
+          <div class="timeline">
+            <div class="event"><div class="event-icon blue">●</div><div><b>Glucose reading</b><small>112 mg/dL • Stable trend</small></div><time>09:40</time></div>
+            <div class="event"><div class="event-icon purple">💉</div><div><b>Rapid-acting insulin</b><small>4 units • Breakfast context</small></div><time>08:10</time></div>
+            <div class="event"><div class="event-icon orange">🍽</div><div><b>Poha + boiled egg</b><small>Estimated carbs: 30–40 g • Confidence 64%</small></div><time>08:05</time></div>
+            <div class="event"><div class="event-icon green">🚶</div><div><b>Walking activity</b><small>25 minutes • Moderate</small></div><time>10:15</time></div>
+            <div class="event"><div class="event-icon blue">✦</div><div><b>AI risk insight</b><small>Low short-term risk signal</small></div><time>10:30</time></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SAFETY -->
+      <section class="page" id="safety">
+        <div class="section-head"><div><h2>Safety & Privacy</h2><p>Safety-first principles built into the prototype.</p></div></div>
+        <div class="safety-grid">
+          <div class="card safety-main"><div class="shield">🛡</div><h2>Decision support, not diagnosis</h2><p>Glucoguard is designed to provide contextual insights while keeping medication and clinical decisions with the user and their care team.</p></div>
+          <div class="card"><div class="safety-row"><span>No insulin dosing</span><b class="pill green">DISABLED</b></div><div class="safety-row"><span>No diagnosis</span><b class="pill green">DISABLED</b></div><div class="safety-row"><span>Uncertainty shown</span><b class="pill green">ON</b></div><div class="safety-row"><span>Clinical validation</span><b class="pill yellow">ROADMAP</b></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>

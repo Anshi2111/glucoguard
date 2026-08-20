@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-08-18T22:54:16.491248",
+  "training_summary": {
+    "train_samples": 704,
+    "test_samples": 303,
+    "train_positive_rate": 0.35795454545454547,
+    "test_positive_rate": 0.35973597359735976
+  },
+  "model_results": {
+    "logistic_regression": {
+      "recall": 0.5779816513761468,
+      "precision": 0.3795180722891566,
+      "f1_score": 0.4581818181818182,
+      "accuracy": 0.5082508250825083,
+      "roc_auc": 0.5427031116996122,
+      "specificity": 0.4690721649484536,
+      "tp": 63,
+      "tn": 91,
+      "fp": 103,
+      "fn": 46
+    },
+    "random_forest": {
+      "recall": 0.5321100917431193,
+      "precision": 0.4027777777777778,
+      "f1_score": 0.45849802371541504,
+      "accuracy": 0.5478547854785478,
+      "roc_auc": 0.5671048898136763,
+      "specificity": 0.5567010309278351,
+      "tp": 58,
+      "tn": 108,
+      "fp": 86,
+      "fn": 51
+    },
+    "xgboost": {
+      "recall": 0.43119266055045874,
+      "precision": 0.4051724137931034,
+      "f1_score": 0.4177777777777778,
+      "accuracy": 0.5676567656765676,
+      "roc_auc": 0.5542892272770263,
+      "specificity": 0.6443298969072165,
+      "tp": 47,
+      "tn": 125,
+      "fp": 69,
+      "fn": 62
+    }
+  }
+}
