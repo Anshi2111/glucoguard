@@ -110,7 +110,7 @@ async function loadDashboard() {
       document.getElementById('risk-status').textContent = riskLevel;
       document.getElementById('risk-value').innerHTML = `<strong>${riskLevel}</strong><span>risk</span>`;
       document.getElementById('risk-value').style.color = color;
-      document.getElementById('risk-description').textContent = riskData.description || data.risk.description;
+      document.getElementById('risk-description').textContent = riskData.description || riskData.description || 'Risk assessment loaded';
     }
 
     // Update context cards
