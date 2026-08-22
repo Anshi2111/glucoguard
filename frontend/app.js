@@ -1,31 +1,56 @@
 const API_URL = 'http://localhost:5000/api';
 let authToken = localStorage.getItem('authToken');
 
-// Page titles
-const titles = {
-  dashboard: ["PATIENT OVERVIEW", "Good morning, Demo Patient", "Your glucose, meal, activity and insulin context in one place."],
-  glucose: ["GLUCOSE MONITORING", "Glucose monitoring", "Log and track your glucose readings."],
-  meal: ["MEAL INTELLIGENCE", "Meal Intelligence", "Log meals and track carbohydrate intake."],
-  insulin: ["INSULIN LOG", "Insulin Log", "Insulin history is used as context, not as a dosing recommendation."],
-  risk: ["AI RISK ENGINE", "AI Risk Engine", "Rule-based short-term hypoglycemia risk assessment."],
-  timeline: ["HEALTH TIMELINE", "Health Timeline", "Glucose, meals, insulin, and AI insights in one view."],
-  cgm: ["CGM DEVICES", "CGM Integration", "Connect Continuous Glucose Monitors for automatic data sync."],
-  safety: ["SAFETY & PRIVACY", "Safety & Privacy", "Safety-first principles built into the application."]
+// Page metadata
+const pages = {
+  dashboard: { label: 'OVERVIEW', title: 'Good morning', subtitle: '' },
+  glucose: { label: 'GLUCOSE', title: 'Glucose monitoring', subtitle: 'Track and log your readings' },
+  meal: { label: 'MEALS', title: 'Meal intelligence', subtitle: 'Log and track Indian meals' },
+  insulin: { label: 'INSULIN', title: 'Insulin log', subtitle: 'Record your insulin doses' },
+  risk: { label: 'RISK', title: 'Risk assessment', subtitle: 'Short-term hypoglycemia prediction' },
+  timeline: { label: 'TIMELINE', title: 'Health timeline', subtitle: 'Your glucose, meals, insulin, and insights' },
+  cgm: { label: 'DEVICES', title: 'CGM devices', subtitle: 'Connect your continuous glucose monitor' },
+  safety: { label: 'SAFETY', title: 'Safety & privacy', subtitle: 'How we protect your health data' }
 };
 
-// Page navigation
+// Toast notification
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => t.style.display = 'none', 2200);
+}
+
+// Check authentication
+function checkAuth() {
+  if (!authToken) {
+    window.location.href = 'login.html';
+  }
+}
+
+// Navigation
 function go(page) {
-  document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  
+  // Show target page
   const target = document.getElementById(page);
-  if (target) target.classList.add("active");
-  document.querySelectorAll("[data-page]").forEach(x => x.classList.toggle("active", x.dataset.page === page));
-  if (titles[page]) {
-    document.getElementById("eyebrow").textContent = titles[page][0];
-    document.getElementById("page-title").textContent = titles[page][1];
-    document.getElementById("page-subtitle").textContent = titles[page][2];
+  if (target) target.classList.add('active');
+  
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+  
+  // Update header
+  if (pages[page]) {
+    document.getElementById('eyebrow').textContent = pages[page].label;
+    document.getElementById('page-title').textContent = pages[page].title;
+    document.getElementById('page-subtitle').textContent = pages[page].subtitle;
   }
   
-  // Reload data when navigating to specific pages
+  // Reload data when navigating
   if (page === 'glucose') {
     loadGlucoseData();
   } else if (page === 'meal') {
@@ -40,32 +65,8 @@ function go(page) {
     loadCGMDevices();
   }
   
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// Navigation buttons setup moved to DOMContentLoaded below
-
-// Toast notification
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.style.display = "block";
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => t.style.display = "none", 2200);
-}
-
-// Check authentication
-function checkAuth() {
-  if (!authToken) {
-    window.location.href = 'login.html';
-  }
-}
-
-// Logout
-document.getElementById('logout-btn').addEventListener('click', () => {
-  localStorage.removeItem('authToken');
-  window.location.href = 'login.html';
-});
 
 // API calls with auth
 async function apiCall(endpoint, method = 'GET', body = null) {
@@ -96,11 +97,12 @@ async function loadUserProfile() {
     const fullName = `${firstName} ${lastName}`.trim();
     const initials = (data.user.firstName?.[0] || 'U') + (data.user.lastName?.[0] || '');
     
-    document.getElementById('user-avatar').textContent = initials;
-    document.getElementById('user-name').textContent = fullName;
-    document.getElementById('user-diabetes').textContent = `${data.user.diabetesType || 'Type Unknown'} • Active`;
     document.getElementById('top-avatar').textContent = initials;
-    document.getElementById('top-name').textContent = fullName;
+    document.getElementById('user-avatar-large').textContent = initials;
+    document.getElementById('user-name').textContent = fullName;
+    document.getElementById('user-name-menu').textContent = fullName;
+    document.getElementById('user-diabetes').textContent = `${data.user.diabetesType || 'Type Unknown'} • Active`;
+    document.getElementById('user-diabetes-menu').textContent = data.user.diabetesType || 'Type Unknown';
     
     // Update greeting with actual name
     document.getElementById('page-title').textContent = `Good morning, ${firstName}`;
@@ -116,10 +118,10 @@ async function loadDashboard() {
   if (data) {
     // Update current glucose
     if (data.currentGlucose) {
-      document.getElementById('current-glucose').innerHTML = `${data.currentGlucose.value} <small>mg/dL</small>`;
-      document.getElementById('glucose-status').textContent = `● ${data.currentGlucose.status}`;
+      document.getElementById('current-glucose').innerHTML = `${data.currentGlucose.value} <small class="glucose-unit">mg/dL</small>`;
+      document.getElementById('glucose-status').textContent = data.currentGlucose.status;
       
-      // Cap minutesAgo at 24 hours (1440 minutes)
+      // Cap minutesAgo at 24 hours
       const minutesAgo = Math.min(data.currentGlucose.minutesAgo || 0, 1440);
       let timeText = '';
       if (minutesAgo < 1) timeText = 'just now';
@@ -130,10 +132,11 @@ async function loadDashboard() {
         timeText = mins > 0 ? `${hours}h ${mins}m ago` : `${hours}h ago`;
       }
       
-      document.getElementById('trend-line').innerHTML = `${data.currentGlucose.trend} <span>Last reading ${timeText}</span>`;
+      document.getElementById('trend-line').textContent = `Last reading ${timeText}`;
+      updateDashboardGlucoseChart();
     }
 
-    // Try to get ML-based risk, fall back to rule-based
+    // Try to get ML-based risk
     let riskData = await apiCall('/predict-risk', 'POST');
     if (!riskData || riskData.error || riskData.message) {
       riskData = data.risk;
@@ -142,13 +145,22 @@ async function loadDashboard() {
     // Update risk
     if (riskData) {
       const riskLevel = riskData.risk_level || riskData.level || 'UNKNOWN';
-      const colors = { 'LOW': '#62c957', 'MODERATE': '#f1b532', 'ELEVATED': '#e75c69', 'UNKNOWN': '#999' };
-      const color = colors[riskLevel] || '#2f80ed';
+      const riskCircle = document.getElementById('risk-value');
       
-      document.getElementById('risk-status').textContent = riskLevel;
-      document.getElementById('risk-value').innerHTML = `<strong>${riskLevel}</strong><span>risk</span>`;
-      document.getElementById('risk-value').style.color = color;
-      document.getElementById('risk-description').textContent = riskData.description || riskData.description || 'Risk assessment loaded';
+      riskCircle.textContent = riskLevel;
+      riskCircle.classList.remove('low', 'moderate', 'elevated');
+      if (riskLevel === 'LOW') riskCircle.classList.add('low');
+      else if (riskLevel === 'MODERATE') riskCircle.classList.add('moderate');
+      else if (riskLevel === 'ELEVATED') riskCircle.classList.add('elevated');
+      
+      const badge = document.getElementById('risk-status');
+      badge.textContent = riskLevel;
+      badge.classList.remove('low', 'moderate', 'elevated');
+      if (riskLevel === 'LOW') badge.classList.add('low');
+      else if (riskLevel === 'MODERATE') badge.classList.add('moderate');
+      else if (riskLevel === 'ELEVATED') badge.classList.add('elevated');
+      
+      document.getElementById('risk-description').textContent = riskData.description || 'Risk assessment loaded';
     }
 
     // Update context cards
@@ -156,25 +168,72 @@ async function loadDashboard() {
     if (data.contextCards) {
       data.contextCards.forEach(card => {
         contextHTML += `
-          <div class="context-card">
-            <div class="context-icon ${card.color}">${card.icon}</div>
-            <div>
-              <span>${card.label}</span>
-              <strong>${card.value}</strong>
-              <small>${card.detail}</small>
-            </div>
-            <b class="check">${card.available ? '✓' : '✗'}</b>
+          <div class="context-item">
+            <span class="context-icon">${card.icon}</span>
+            <span class="context-label">${card.label}</span>
+            <strong class="context-value">${card.value}</strong>
           </div>
         `;
       });
     }
     if (contextHTML) document.getElementById('context-grid').innerHTML = contextHTML;
-    
-    // Update dashboard glucose chart
-    if (data.currentGlucose) {
-      updateDashboardGlucoseChart();
-    }
   }
+}
+
+function updateDashboardGlucoseChart() {
+  (async () => {
+    const data = await apiCall('/glucose?limit=10');
+    if (!data || !data.readings) return;
+    
+    const readings = data.readings.slice().reverse();
+    if (readings.length < 2) return;
+    
+    const svg = document.getElementById('glucose-chart');
+    if (!svg) return;
+    
+    const values = readings.map(r => r.value);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = Math.max(maxVal - minVal, 40);
+    
+    const viewBox = svg.getAttribute('viewBox').split(' ');
+    const width = parseFloat(viewBox[2]);
+    const height = parseFloat(viewBox[3]);
+    const padding = 20;
+    const chartWidth = width - (padding * 2);
+    const chartHeight = height - (padding * 2);
+    
+    const pointCount = readings.length;
+    const xStep = chartWidth / (pointCount - 1);
+    
+    let points = '';
+    let circles = '';
+    
+    readings.forEach((reading, index) => {
+      const x = padding + (index * xStep);
+      const normalizedValue = (reading.value - (minVal - range * 0.1)) / (range * 1.2);
+      const y = height - padding - (Math.max(0, Math.min(1, normalizedValue)) * chartHeight);
+      
+      points += `${x},${y} `;
+      const isLast = index === pointCount - 1;
+      circles += `<circle cx="${x}" cy="${y}" r="${isLast ? 5 : 3.5}"/>`;
+    });
+    
+    svg.querySelectorAll('polyline, g[fill="#00D9FF"]').forEach(el => el.remove());
+    
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', '#00D9FF');
+    polyline.setAttribute('stroke-width', '3.5');
+    polyline.setAttribute('stroke-linejoin', 'round');
+    polyline.setAttribute('points', points.trim());
+    svg.appendChild(polyline);
+    
+    const circleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    circleGroup.setAttribute('fill', '#00D9FF');
+    circleGroup.innerHTML = circles;
+    svg.appendChild(circleGroup);
+  })();
 }
 
 // Glucose section
@@ -197,19 +256,17 @@ document.getElementById('add-glucose-btn')?.addEventListener('click', async () =
   });
 
   if (result && result.id) {
-    showToast('Glucose reading saved');
+    showToast('✓ Glucose reading saved');
     document.getElementById('glucose-value').value = '';
     document.getElementById('glucose-notes').value = '';
     loadGlucoseData();
-  } else {
-    showToast('Error saving glucose reading');
+    loadDashboard();
   }
 });
 
 async function loadGlucoseData() {
   const data = await apiCall('/glucose?limit=30');
   if (data && data.readings) {
-    // Update stats
     if (data.readings.length > 0) {
       const currentValue = parseFloat(data.readings[0].value);
       document.getElementById('stat-current').textContent = isNaN(currentValue) ? '--' : currentValue;
@@ -220,7 +277,6 @@ async function loadGlucoseData() {
       
       document.getElementById('stat-count').textContent = data.readings.length;
 
-      // Calculate trend
       if (data.readings.length >= 2) {
         const latest = parseFloat(data.readings[0].value);
         const previous = parseFloat(data.readings[1].value);
@@ -230,99 +286,30 @@ async function loadGlucoseData() {
         document.getElementById('stat-trend').textContent = trend;
       }
 
-      // Update trend chart with real data
       updateGlucoseTrendChart(data.readings);
     }
   }
 }
 
-function updateDashboardGlucoseChart() {
-  // Get the last 10 glucose readings for dashboard chart
-  const apiCall_local = apiCall;
-  (async () => {
-    const data = await apiCall_local('/glucose?limit=10');
-    if (!data || !data.readings) return;
-    
-    const readings = data.readings.slice().reverse(); // oldest first
-    if (readings.length < 2) return;
-    
-    const svg = document.getElementById('glucose-chart');
-    if (!svg) return;
-    
-    // Calculate scaling
-    const values = readings.map(r => r.value);
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
-    const range = Math.max(maxVal - minVal, 40);
-    
-    // Chart dimensions (preserveAspectRatio="none" so we use viewBox values)
-    const viewBox = svg.getAttribute('viewBox').split(' ');
-    const width = parseFloat(viewBox[2]);
-    const height = parseFloat(viewBox[3]);
-    const padding = 20;
-    const chartWidth = width - (padding * 2);
-    const chartHeight = height - (padding * 2);
-    
-    // Calculate points
-    const pointCount = readings.length;
-    const xStep = chartWidth / (pointCount - 1);
-    
-    let points = '';
-    let circles = '';
-    
-    readings.forEach((reading, index) => {
-      const x = padding + (index * xStep);
-      const normalizedValue = (reading.value - (minVal - range * 0.1)) / (range * 1.2);
-      const y = height - padding - (Math.max(0, Math.min(1, normalizedValue)) * chartHeight);
-      
-      points += `${x},${y} `;
-      const isLast = index === pointCount - 1;
-      circles += `<circle cx="${x}" cy="${y}" r="${isLast ? 5 : 3.5}"/>`;
-    });
-    
-    // Clear and update
-    svg.querySelectorAll('polyline, g[fill="#2f80ed"]').forEach(el => el.remove());
-    
-    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    polyline.setAttribute('fill', 'none');
-    polyline.setAttribute('stroke', '#2f80ed');
-    polyline.setAttribute('stroke-width', '3.5');
-    polyline.setAttribute('stroke-linejoin', 'round');
-    polyline.setAttribute('points', points.trim());
-    svg.appendChild(polyline);
-    
-    const circleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    circleGroup.setAttribute('fill', '#2f80ed');
-    circleGroup.innerHTML = circles;
-    svg.appendChild(circleGroup);
-  })();
-}
-
 function updateGlucoseTrendChart(readings) {
   if (!readings || readings.length === 0) return;
   
-  // Sort by timestamp ascending (oldest first)
   const sorted = [...readings].reverse();
-  
-  // Limit to last 15 readings for chart
   const chartData = sorted.slice(-15);
   
   if (chartData.length < 2) return;
   
-  // Find min/max for scaling
   const values = chartData.map(r => r.value);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const range = Math.max(maxVal - minVal, 50);
   
-  // Chart dimensions
   const width = 900;
   const height = 300;
   const padding = { top: 30, bottom: 40, left: 60, right: 30 };
   const chartWidth = width - (padding.left + padding.right);
   const chartHeight = height - (padding.top + padding.bottom);
   
-  // Calculate points
   const pointCount = chartData.length;
   const xStep = chartWidth / (pointCount - 1);
   
@@ -336,28 +323,21 @@ function updateGlucoseTrendChart(readings) {
     const y = height - padding.bottom - (Math.max(0, Math.min(1, normalizedValue)) * chartHeight);
     
     points += `${x},${y} `;
+    circles += `<circle cx="${x}" cy="${y}" r="${index === pointCount - 1 ? 6 : 5}" class="glucose-point"/>`;
     
-    // Add circles at each point
-    const isLast = index === pointCount - 1;
-    circles += `<circle cx="${x}" cy="${y}" r="${isLast ? 6 : 5}" class="glucose-point"/>`;
-    
-    // Add tooltip
     const time = new Date(reading.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    tooltips += `<g class="tooltip-group" data-index="${index}">
-      <rect x="${x - 35}" y="${y - 50}" width="70" height="45" rx="4" fill="#1a2d3f" stroke="#00D9FF" stroke-width="1"/>
-      <text x="${x}" y="${y - 28}" text-anchor="middle" fill="#fff" font-size="13" font-weight="bold">${Math.round(reading.value)}</text>
+    tooltips += `<g class="tooltip-group" data-index="${index}" style="display: none;">
+      <rect x="${x - 35}" y="${y - 50}" width="70" height="45" rx="4" fill="#0d121a" stroke="#00D9FF" stroke-width="1"/>
+      <text x="${x}" y="${y - 28}" text-anchor="middle" fill="#f0f2f5" font-size="13" font-weight="bold">${Math.round(reading.value)}</text>
       <text x="${x}" y="${y - 12}" text-anchor="middle" fill="#738196" font-size="10">${time}</text>
     </g>`;
   });
   
-  // Update SVG
   const svg = document.getElementById('glucose-history-chart');
   if (!svg) return;
   
-  // Clear old elements
   svg.querySelectorAll('polyline, .circles, .y-labels, .x-labels, .target-zone, .tooltip-group').forEach(el => el.remove());
   
-  // Add target zone background (70-180 mg/dL)
   const targetMin = 70;
   const targetMax = 180;
   const normalizedMin = (targetMin - (minVal - range * 0.1)) / (range * 1.2);
@@ -375,7 +355,6 @@ function updateGlucoseTrendChart(readings) {
   targetZone.classList.add('target-zone');
   svg.appendChild(targetZone);
   
-  // Add Y-axis labels
   const yLabelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   yLabelsGroup.classList.add('y-labels');
   for (let i = 0; i <= 4; i++) {
@@ -392,7 +371,6 @@ function updateGlucoseTrendChart(readings) {
   }
   svg.appendChild(yLabelsGroup);
   
-  // Add X-axis labels (times)
   const xLabelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   xLabelsGroup.classList.add('x-labels');
   for (let i = 0; i < pointCount; i += Math.ceil(pointCount / 5)) {
@@ -411,31 +389,24 @@ function updateGlucoseTrendChart(readings) {
   }
   svg.appendChild(xLabelsGroup);
   
-  // Add polyline
   const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
   polyline.setAttribute('fill', 'none');
-  polyline.setAttribute('stroke', '#2f80ed');
+  polyline.setAttribute('stroke', '#00D9FF');
   polyline.setAttribute('stroke-width', '5');
   polyline.setAttribute('stroke-linejoin', 'round');
   polyline.setAttribute('points', points.trim());
   svg.appendChild(polyline);
   
-  // Add circles group
   const circleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  circleGroup.setAttribute('fill', '#2f80ed');
+  circleGroup.setAttribute('fill', '#00D9FF');
   circleGroup.classList.add('circles');
   circleGroup.innerHTML = circles;
   svg.appendChild(circleGroup);
   
-  // Add tooltip group
   const tooltipGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   tooltipGroup.innerHTML = tooltips;
   svg.appendChild(tooltipGroup);
   
-  // Hide tooltips by default
-  svg.querySelectorAll('.tooltip-group').forEach(el => el.style.display = 'none');
-  
-  // Show tooltip on hover
   svg.querySelectorAll('.glucose-point').forEach((circle, idx) => {
     circle.addEventListener('mouseenter', () => {
       svg.querySelectorAll('.tooltip-group').forEach(el => el.style.display = 'none');
@@ -471,26 +442,24 @@ document.getElementById('add-meal-btn')?.addEventListener('click', async () => {
   });
 
   if (result && result.id) {
-    showToast('Meal record saved');
+    showToast('✓ Meal saved');
     document.getElementById('meal-name').value = '';
     document.getElementById('meal-carbs').value = '';
     document.getElementById('meal-servings').value = '1';
     document.getElementById('meal-notes').value = '';
-    document.getElementById('food-results').style.display = 'none';
+    document.getElementById('food-results').innerHTML = '';
     document.getElementById('food-search').value = '';
     loadMealHistory();
-  } else {
-    showToast('Error saving meal');
+    loadDashboard();
   }
 });
 
-// Food search and selection
 let currentSelectedFood = null;
 
 async function searchFoods() {
   const query = document.getElementById('food-search').value.trim();
   if (query.length < 2) {
-    document.getElementById('food-results').style.display = 'none';
+    document.getElementById('food-results').innerHTML = '';
     return;
   }
 
@@ -500,7 +469,7 @@ async function searchFoods() {
     
     let html = '';
     if (!data.foods || data.foods.length === 0) {
-      html = '<div style="text-align: center; color: #738196; padding: 15px; font-size: 9px;">No foods found</div>';
+      html = '<div class="empty-state">No foods found</div>';
     } else {
       data.foods.forEach(food => {
         const foodId = food.id;
@@ -508,22 +477,19 @@ async function searchFoods() {
         const foodCarbs = parseFloat(food.carbsPerServing) || 0;
         const foodRegion = food.region || 'Unknown';
         
-        html += `<div style="padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; background: #fff; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'" onclick="selectFood(${foodId}, '${foodName}', ${foodCarbs}, '${foodRegion}')">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; font-size: 11px;">
-            <div style="flex: 1;">
-              <b style="font-size: 12px; color: #222;">${food.name}</b><br>
-              <small style="color: #738196;">${food.category || ''} • ${food.servingSize || ''}</small>
-            </div>
-            <div style="text-align: right; color: #2f80ed; font-weight: bold; margin-left: 10px;">
-              <div>${foodCarbs}g</div>
-              <small style="color: #738196; font-weight: normal; font-size: 9px;">${foodRegion}</small>
-            </div>
+        html += `<div class="food-result-item" onclick="selectFood(${foodId}, '${foodName}', ${foodCarbs}, '${foodRegion}')">
+          <div>
+            <div class="food-result-name">${food.name}</div>
+            <div class="food-result-meta">${food.category || ''} • ${food.servingSize || ''}</div>
+          </div>
+          <div>
+            <div class="food-result-carbs">${foodCarbs}g</div>
+            <div class="food-result-region">${foodRegion}</div>
           </div>
         </div>`;
       });
     }
     document.getElementById('food-results').innerHTML = html;
-    document.getElementById('food-results').style.display = 'block';
   } catch (err) {
     console.error('Food search error:', err);
     showToast('Error searching foods');
@@ -533,8 +499,7 @@ async function searchFoods() {
 function filterByRegion() {
   const region = document.getElementById('food-region').value;
   if (!region) {
-    document.getElementById('food-results').style.display = 'none';
-    document.getElementById('food-search').value = '';
+    document.getElementById('food-results').innerHTML = '';
     return;
   }
 
@@ -543,7 +508,7 @@ function filterByRegion() {
     .then(data => {
       let html = '';
       if (!data.foods || data.foods.length === 0) {
-        html = '<div style="text-align: center; color: #738196; padding: 15px; font-size: 9px;">No foods found for this region</div>';
+        html = '<div class="empty-state">No foods found for this region</div>';
       } else {
         data.foods.forEach(food => {
           const foodId = food.id;
@@ -551,26 +516,19 @@ function filterByRegion() {
           const foodCarbs = parseFloat(food.carbsPerServing) || 0;
           const foodRegion = food.region || 'Unknown';
           
-          html += `<div style="padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; background: #fff; transition: background 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'" onclick="selectFood(${foodId}, '${foodName}', ${foodCarbs}, '${foodRegion}')">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; font-size: 11px;">
-              <div style="flex: 1;">
-                <b style="font-size: 12px; color: #222;">${food.name}</b><br>
-                <small style="color: #738196;">${food.category || ''} • ${food.servingSize || ''}</small>
-              </div>
-              <div style="text-align: right; color: #2f80ed; font-weight: bold; margin-left: 10px;">
-                <div>${foodCarbs}g</div>
-                <small style="color: #738196; font-weight: normal; font-size: 9px;">${foodRegion}</small>
-              </div>
+          html += `<div class="food-result-item" onclick="selectFood(${foodId}, '${foodName}', ${foodCarbs}, '${foodRegion}')">
+            <div>
+              <div class="food-result-name">${food.name}</div>
+              <div class="food-result-meta">${food.category || ''} • ${food.servingSize || ''}</div>
+            </div>
+            <div>
+              <div class="food-result-carbs">${foodCarbs}g</div>
+              <div class="food-result-region">${foodRegion}</div>
             </div>
           </div>`;
         });
       }
       document.getElementById('food-results').innerHTML = html;
-      document.getElementById('food-results').style.display = 'block';
-    })
-    .catch(err => {
-      console.error('Filter error:', err);
-      showToast('Error filtering foods');
     });
 }
 
@@ -579,7 +537,7 @@ function selectFood(id, name, carbs, region) {
   document.getElementById('meal-name').value = name;
   document.getElementById('meal-servings').value = '1';
   calculateCarbs();
-  document.getElementById('food-results').style.display = 'none';
+  document.getElementById('food-results').innerHTML = '';
   showToast(`Selected: ${name}`);
 }
 
@@ -598,14 +556,17 @@ async function loadMealHistory() {
   if (data && data.meals) {
     let html = '';
     if (data.meals.length === 0) {
-      html = '<div style="text-align: center; color: #738196; padding: 20px; font-size: 9px;">No meals logged yet</div>';
+      html = '<p class="empty-state">No meals logged yet</p>';
     } else {
       data.meals.forEach(meal => {
         const time = new Date(meal.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         html += `
-          <div class="history-row">
-            <span>🍽 <b>${meal.name}</b><small>${time} • ${meal.estimatedCarbs}g carbs</small></span>
-            <button onclick="deleteMeal(${meal.id})" style="background:none; border:none; color:#e75c69; cursor:pointer; font-size:12px;">✕</button>
+          <div class="meal-item">
+            <div class="meal-item-content">
+              <div class="meal-item-value">🍽 ${meal.name}</div>
+              <div class="meal-item-meta">${time} • ${meal.estimatedCarbs}g carbs</div>
+            </div>
+            <button class="item-delete-btn" onclick="deleteMeal(${meal.id})">✕</button>
           </div>
         `;
       });
@@ -642,12 +603,11 @@ document.getElementById('add-insulin-btn')?.addEventListener('click', async () =
   });
 
   if (result && result.id) {
-    showToast('Insulin record saved');
+    showToast('✓ Insulin record saved');
     document.getElementById('insulin-dose').value = '';
     document.getElementById('insulin-notes').value = '';
     loadInsulinHistory();
-  } else {
-    showToast('Error saving insulin record');
+    loadDashboard();
   }
 });
 
@@ -656,14 +616,16 @@ async function loadInsulinHistory() {
   if (data && data.history) {
     let html = '';
     if (data.history.length === 0) {
-      html = '<div style="text-align: center; color: #738196; padding: 20px; font-size: 9px;">No insulin logged yet</div>';
+      html = '<p class="empty-state">No insulin logged yet</p>';
     } else {
       data.history.forEach(record => {
         const time = new Date(record.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         html += `
-          <div class="history-row">
-            <span>💉 <b>${record.type}</b><small>${time}</small></span>
-            <strong>${record.dose} units</strong>
+          <div class="insulin-item">
+            <div class="insulin-item-content">
+              <div class="insulin-item-value">💉 ${record.type}</div>
+              <div class="insulin-item-meta">${time} • ${record.dose} units</div>
+            </div>
           </div>
         `;
       });
@@ -673,65 +635,53 @@ async function loadInsulinHistory() {
 }
 
 // Risk engine
-document.getElementById('rerun-risk-btn')?.addEventListener('click', async () => {
+document.getElementById('rerun-risk-btn')?.addEventListener('click', () => {
   loadRiskEngine();
 });
 
 async function loadRiskEngine() {
-  // Try ML prediction first, fall back to rule-based
   let data = await apiCall('/predict-risk', 'POST');
   
   if (!data || data.error || data.message === 'Insufficient glucose data for prediction') {
-    // Fallback to rule-based
     data = await apiCall('/risk');
   }
   
   if (data) {
-    const colors = { 'LOW': '#62c957', 'MODERATE': '#f1b532', 'ELEVATED': '#e75c69', 'UNKNOWN': '#999' };
-    const color = colors[data.risk_level || data.level] || '#2f80ed';
-    
     const riskLevel = data.risk_level || data.level || 'UNKNOWN';
     const title = data.title || `Risk: ${riskLevel}`;
-    const description = data.description || (data.probability ? `ML Model Probability: ${(data.probability * 100).toFixed(1)}%` : 'Loading risk assessment based on your data...');
+    const description = data.description || (data.probability ? `ML Model Probability: ${(data.probability * 100).toFixed(1)}%` : 'Loading risk assessment...');
     
-    document.getElementById('risk-ring-detail').innerHTML = `<div><strong>${riskLevel}</strong><small>short-term</small></div>`;
-    const ring = document.getElementById('risk-ring-detail').querySelector('.large-ring');
-    if (ring) ring.style.borderColor = color;
-    document.getElementById('risk-title').textContent = title;
-    document.getElementById('risk-details').textContent = description;
+    const circleEl = document.getElementById('risk-circle-large');
+    circleEl.textContent = riskLevel;
+    circleEl.classList.remove('low', 'moderate', 'elevated');
+    if (riskLevel === 'LOW') circleEl.classList.add('low');
+    else if (riskLevel === 'MODERATE') circleEl.classList.add('moderate');
+    else if (riskLevel === 'ELEVATED') circleEl.classList.add('elevated');
+    
+    document.getElementById('risk-explanation').textContent = description;
 
-    // Build factors display
     let factorsHTML = '';
     if (data.factors && Array.isArray(data.factors)) {
-      data.factors.forEach(factor => {
-        // Handle both old format (contribution) and new format (importance)
+      data.factors.forEach((factor, idx) => {
         const importance = factor.importance || factor.weight || 0;
         const contribution = factor.contribution || (importance > 0.6 ? 'high' : importance > 0.3 ? 'medium' : 'low');
         const width = importance * 100;
-        const progressClass = { 'high': '', 'medium': 'yellow', 'low': 'cyan' }[contribution] || '';
         
         factorsHTML += `
-          <div class="factor">
-            <div>
-              <span>${factor.name}</span>
-              <b>${contribution.charAt(0).toUpperCase() + contribution.slice(1)}</b>
+          <div class="factor-item" style="animation-delay: ${idx * 50}ms;">
+            <div class="factor-header">
+              <span class="factor-name">${factor.name}</span>
+              <span class="factor-importance ${contribution}">${contribution.charAt(0).toUpperCase() + contribution.slice(1)}</span>
             </div>
-            <div class="progress ${progressClass}"><i style="width:${Math.min(width, 100)}%"></i></div>
+            <div class="factor-bar">
+              <div class="factor-bar-fill" style="width: ${Math.min(width, 100)}%; --width: ${Math.min(width, 100)}%;"></div>
+            </div>
           </div>
         `;
       });
     }
     
-    // Add model info
-    if (data.model) {
-      const modelBadge = data.model === 'logistic_regression' ? 'ML Model' : data.model === 'rule-based' ? 'Rule-Based' : 'AI Engine';
-      const confidence = data.confidence ? ` • ${(data.confidence * 100).toFixed(0)}% confidence` : '';
-      factorsHTML = `<div style="padding: 10px; background: #f0f7ff; border-radius: 8px; margin-bottom: 15px; font-size: 9px; color: #2f80ed;">
-        <b>${modelBadge}</b>${confidence}
-      </div>` + factorsHTML;
-    }
-    
-    document.getElementById('risk-factors').innerHTML = factorsHTML || '<div style="text-align:center; color:#738196; font-size:9px; padding:20px;">No risk factors calculated</div>';
+    document.getElementById('risk-factors').innerHTML = factorsHTML || '<p class="empty-state">No risk factors calculated</p>';
   }
 }
 
@@ -741,24 +691,23 @@ async function loadTimeline() {
   if (data && data.events) {
     let html = '';
     if (data.events.length === 0) {
-      html = '<div style="text-align: center; color: #738196; padding: 30px; font-size: 9px;">No events recorded today</div>';
+      html = '<p class="empty-state">No events recorded today</p>';
     } else {
-      data.events.forEach(event => {
+      data.events.forEach((event, idx) => {
         const time = new Date(event.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        let icon = '●', color = 'blue';
-        if (event.type === 'glucose') { icon = '●'; color = 'blue'; }
-        else if (event.type === 'meal') { icon = '🍽'; color = 'orange'; }
-        else if (event.type === 'insulin') { icon = '💉'; color = 'purple'; }
-        else if (event.type === 'risk') { icon = '✦'; color = 'blue'; }
+        let icon = '●';
+        let type = 'glucose';
+        if (event.type === 'meal') { icon = '🍽'; type = 'meal'; }
+        else if (event.type === 'insulin') { icon = '💉'; type = 'insulin'; }
+        else if (event.type === 'risk') { icon = '✦'; type = 'risk'; }
 
         html += `
-          <div class="event">
-            <div class="event-icon ${color}">${icon}</div>
-            <div>
-              <b>${event.title}</b>
-              <small>${event.detail}</small>
+          <div class="timeline-event ${type}" style="animation-delay: ${idx * 50}ms;">
+            <div class="timeline-content">
+              <div class="timeline-title">${icon} ${event.title}</div>
+              <div class="timeline-detail">${event.detail}</div>
+              <div class="timeline-time">${time}</div>
             </div>
-            <time>${time}</time>
           </div>
         `;
       });
@@ -785,7 +734,7 @@ document.getElementById('add-cgm-btn')?.addEventListener('click', async () => {
   });
 
   if (result && result.success) {
-    showToast(`${result.device.deviceType} connected successfully`);
+    showToast(`✓ ${result.device.deviceType} connected`);
     document.getElementById('cgm-device-type').value = '';
     document.getElementById('cgm-device-id').value = '';
     document.getElementById('cgm-auth-token').value = '';
@@ -800,20 +749,20 @@ async function loadCGMDevices() {
   if (data && data.devices) {
     let html = '';
     if (data.devices.length === 0) {
-      html = '<div style="text-align: center; color: #738196; padding: 20px; font-size: 9px;">No CGM devices connected</div>';
+      html = '<p class="empty-state">No devices connected</p>';
     } else {
       data.devices.forEach(device => {
         const lastSync = device.lastSync ? new Date(device.lastSync).toLocaleString() : 'Never';
         html += `
-          <div style="padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <b style="text-transform: capitalize;">${device.deviceType.replace('_', ' ')}</b>
-              <small style="display: block; color: #738196; margin-top: 4px;">ID: ${device.deviceId}</small>
-              <small style="display: block; color: #999; margin-top: 2px;">Last sync: ${lastSync}</small>
+          <div class="device-item">
+            <div class="device-info">
+              <div class="device-name">${device.deviceType.replace('_', ' ')}</div>
+              <div class="device-detail">ID: ${device.deviceId}</div>
+              <div class="device-detail">Last sync: ${lastSync}</div>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <button onclick="syncCGMDevice(${device.id})" style="background: #2f80ed; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 9px; cursor: pointer;">Sync</button>
-              <button onclick="disconnectCGMDevice(${device.id})" style="background: #e75c69; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 9px; cursor: pointer;">Disconnect</button>
+            <div class="device-actions">
+              <button class="device-btn" onclick="syncCGMDevice(${device.id})">Sync</button>
+              <button class="device-btn danger" onclick="disconnectCGMDevice(${device.id})">Disconnect</button>
             </div>
           </div>
         `;
@@ -826,12 +775,9 @@ async function loadCGMDevices() {
 async function syncCGMDevice(deviceId) {
   const result = await apiCall(`/cgm/sync/${deviceId}`, 'POST');
   if (result && result.status) {
-    showToast(`Synced ${result.syncedReadings} glucose reading(s) from ${result.deviceType}`);
+    showToast(`✓ Synced ${result.syncedReadings} reading(s)`);
     loadCGMDevices();
-    // Refresh glucose data to show newly synced readings
     setTimeout(loadGlucoseData, 500);
-  } else {
-    showToast(result?.error || 'Error syncing device');
   }
 }
 
@@ -841,43 +787,56 @@ async function disconnectCGMDevice(deviceId) {
     if (result && result.success) {
       showToast('Device disconnected');
       loadCGMDevices();
-    } else {
-      showToast('Error disconnecting device');
     }
   }
 }
 
-/**
- * Auto-sync all CGM devices periodically (every 5 minutes)
- */
 function startCGMAutoSync() {
   setInterval(async () => {
     const result = await apiCall('/cgm/auto-sync', 'POST');
     if (result && result.totalReadings > 0) {
-      console.log(`[CGM] Auto-synced ${result.totalReadings} readings from ${result.totalDevices} device(s)`);
+      console.log(`[CGM] Auto-synced ${result.totalReadings} readings`);
       loadGlucoseData();
       loadDashboard();
     }
-  }, 5 * 60 * 1000); // Every 5 minutes
+  }, 5 * 60 * 1000);
 }
 
 // Initialize on page load
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   checkAuth();
-  loadUserProfile().then(() => {
-    // After user profile loads, then load other data
-    loadDashboard();
-    loadGlucoseData();
-    loadMealHistory();
-    loadInsulinHistory();
-    loadRiskEngine();
-    loadTimeline();
-    loadCGMDevices();
-    startCGMAutoSync();
+  await loadUserProfile();
+  loadDashboard();
+  loadGlucoseData();
+  loadMealHistory();
+  loadInsulinHistory();
+  loadRiskEngine();
+  loadTimeline();
+  loadCGMDevices();
+  startCGMAutoSync();
+
+  // Setup navigation
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => go(btn.dataset.page));
   });
 
-  // Setup navigation buttons AFTER DOM is ready
-  document.querySelectorAll("[data-page]").forEach(b => b.addEventListener("click", () => go(b.dataset.page)));
+  // Profile menu
+  const profileBtn = document.getElementById('profile-btn');
+  const profileMenu = document.getElementById('profile-menu');
+  profileBtn.addEventListener('click', () => {
+    profileMenu.style.display = profileMenu.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', (e) => {
+    if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+      profileMenu.style.display = 'none';
+    }
+  });
+
+  // Logout
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('authToken');
+    window.location.href = 'login.html';
+  });
 
   // Set current time in forms
   const now = new Date();
@@ -886,93 +845,3 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('meal-time').value = now.toISOString().slice(0, 16);
   document.getElementById('insulin-time').value = now.toISOString().slice(0, 16);
 });
-
-
-// ===================================
-// PREMIUM UI ANIMATIONS
-// ===================================
-
-// Animation: Glucose graph line draw (disabled - causes display issues)
-function animateGlucoseChart() {
-  // Glucose chart animation disabled to preserve data display
-  // Can be re-enabled with proper SVG handling
-}
-
-// Animation: Risk ring reveal
-function animateRiskRing() {
-  const ring = document.querySelector('.large-ring');
-  if (ring) {
-    ring.classList.add('risk-ring-animate');
-  }
-}
-
-// Animation: Risk factors stagger
-function animateRiskFactors() {
-  const factors = document.querySelectorAll('#risk-factors .factor');
-  factors.forEach((factor, index) => {
-    factor.classList.remove('factor-animate');
-    void factor.offsetWidth;
-    factor.classList.add('factor-animate');
-    factor.style.animationDelay = (index * 80) + 'ms';
-  });
-}
-
-// Animation: Meal selection
-function animateMealSelection() {
-  const mealName = document.getElementById('meal-name');
-  if (mealName && mealName.value) {
-    const input = mealName;
-    input.classList.remove('meal-animate');
-    void input.offsetWidth;
-    input.classList.add('meal-animate');
-  }
-}
-
-// Animation: Insulin entry slide
-function animateNewInsulinEntry() {
-  const history = document.getElementById('insulin-history');
-  if (history) {
-    const firstRow = history.querySelector('.history-row');
-    if (firstRow && !firstRow.classList.contains('animated')) {
-      firstRow.classList.add('history-row-animate');
-      firstRow.classList.add('animated');
-    }
-  }
-}
-
-// Hook into existing functions
-const originalLoadDashboard = window.loadDashboard;
-window.loadDashboard = function() {
-  originalLoadDashboard.call(this);
-  setTimeout(() => {
-    animateRiskRing();
-    animateRiskFactors();
-  }, 500);
-};
-
-const originalLoadGlucoseData = window.loadGlucoseData;
-window.loadGlucoseData = function() {
-  originalLoadGlucoseData.call(this);
-  setTimeout(animateGlucoseChart, 200);
-};
-
-const originalLoadRiskEngine = window.loadRiskEngine;
-window.loadRiskEngine = function() {
-  originalLoadRiskEngine.call(this);
-  setTimeout(() => {
-    animateRiskRing();
-    setTimeout(animateRiskFactors, 200);
-  }, 300);
-};
-
-const originalSelectFood = window.selectFood;
-window.selectFood = function(id, name, carbs, region) {
-  originalSelectFood.call(this, id, name, carbs, region);
-  setTimeout(animateMealSelection, 50);
-};
-
-const originalLoadInsulinHistory = window.loadInsulinHistory;
-window.loadInsulinHistory = function() {
-  originalLoadInsulinHistory.call(this);
-  setTimeout(animateNewInsulinEntry, 100);
-};
