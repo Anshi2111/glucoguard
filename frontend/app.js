@@ -615,3 +615,101 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('meal-time').value = now.toISOString().slice(0, 16);
   document.getElementById('insulin-time').value = now.toISOString().slice(0, 16);
 });
+
+
+// ===================================
+// PREMIUM UI ANIMATIONS
+// ===================================
+
+// Animation: Glucose graph line draw
+function animateGlucoseChart() {
+  const chart = document.getElementById('glucose-chart');
+  if (chart) {
+    chart.parentElement.classList.add('glucose-chart-animate');
+    const polylines = chart.querySelectorAll('polyline');
+    polylines.forEach(p => {
+      const len = p.getTotalLength ? p.getTotalLength() : 1000;
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+  }
+}
+
+// Animation: Risk ring reveal
+function animateRiskRing() {
+  const ring = document.querySelector('.large-ring');
+  if (ring) {
+    ring.classList.add('risk-ring-animate');
+  }
+}
+
+// Animation: Risk factors stagger
+function animateRiskFactors() {
+  const factors = document.querySelectorAll('#risk-factors .factor');
+  factors.forEach((factor, index) => {
+    factor.classList.remove('factor-animate');
+    void factor.offsetWidth;
+    factor.classList.add('factor-animate');
+    factor.style.animationDelay = (index * 80) + 'ms';
+  });
+}
+
+// Animation: Meal selection
+function animateMealSelection() {
+  const mealName = document.getElementById('meal-name');
+  if (mealName && mealName.value) {
+    const input = mealName;
+    input.classList.remove('meal-animate');
+    void input.offsetWidth;
+    input.classList.add('meal-animate');
+  }
+}
+
+// Animation: Insulin entry slide
+function animateNewInsulinEntry() {
+  const history = document.getElementById('insulin-history');
+  if (history) {
+    const firstRow = history.querySelector('.history-row');
+    if (firstRow && !firstRow.classList.contains('animated')) {
+      firstRow.classList.add('history-row-animate');
+      firstRow.classList.add('animated');
+    }
+  }
+}
+
+// Hook into existing functions
+const originalLoadDashboard = window.loadDashboard;
+window.loadDashboard = function() {
+  originalLoadDashboard.call(this);
+  setTimeout(() => {
+    animateRiskRing();
+    animateRiskFactors();
+  }, 500);
+};
+
+const originalLoadGlucoseData = window.loadGlucoseData;
+window.loadGlucoseData = function() {
+  originalLoadGlucoseData.call(this);
+  setTimeout(animateGlucoseChart, 200);
+};
+
+const originalLoadRiskEngine = window.loadRiskEngine;
+window.loadRiskEngine = function() {
+  originalLoadRiskEngine.call(this);
+  setTimeout(() => {
+    animateRiskRing();
+    setTimeout(animateRiskFactors, 200);
+  }, 300);
+};
+
+const originalSelectFood = window.selectFood;
+window.selectFood = function(id, name, carbs, region) {
+  originalSelectFood.call(this, id, name, carbs, region);
+  setTimeout(animateMealSelection, 50);
+};
+
+const originalLoadInsulinHistory = window.loadInsulinHistory;
+window.loadInsulinHistory = function() {
+  originalLoadInsulinHistory.call(this);
+  setTimeout(animateNewInsulinEntry, 100);
+};
