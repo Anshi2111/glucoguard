@@ -24,6 +24,22 @@ function go(page) {
     document.getElementById("page-title").textContent = titles[page][1];
     document.getElementById("page-subtitle").textContent = titles[page][2];
   }
+  
+  // Reload data when navigating to specific pages
+  if (page === 'glucose') {
+    loadGlucoseData();
+  } else if (page === 'meal') {
+    loadMealHistory();
+  } else if (page === 'insulin') {
+    loadInsulinHistory();
+  } else if (page === 'risk') {
+    loadRiskEngine();
+  } else if (page === 'timeline') {
+    loadTimeline();
+  } else if (page === 'cgm') {
+    loadCGMDevices();
+  }
+  
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -75,13 +91,23 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 async function loadUserProfile() {
   const data = await apiCall('/user');
   if (data && data.user) {
+    const firstName = data.user.firstName || 'User';
+    const lastName = data.user.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
     const initials = (data.user.firstName?.[0] || 'U') + (data.user.lastName?.[0] || '');
+    
     document.getElementById('user-avatar').textContent = initials;
-    document.getElementById('user-name').textContent = `${data.user.firstName} ${data.user.lastName}`;
+    document.getElementById('user-name').textContent = fullName;
     document.getElementById('user-diabetes').textContent = `${data.user.diabetesType || 'Type Unknown'} • Active`;
     document.getElementById('top-avatar').textContent = initials;
-    document.getElementById('top-name').textContent = `${data.user.firstName} ${data.user.lastName}`;
+    document.getElementById('top-name').textContent = fullName;
+    
+    // Update greeting with actual name
+    document.getElementById('page-title').textContent = `Good morning, ${firstName}`;
+    
+    return data.user;
   }
+  return null;
 }
 
 // Load dashboard data
@@ -92,7 +118,19 @@ async function loadDashboard() {
     if (data.currentGlucose) {
       document.getElementById('current-glucose').innerHTML = `${data.currentGlucose.value} <small>mg/dL</small>`;
       document.getElementById('glucose-status').textContent = `● ${data.currentGlucose.status}`;
-      document.getElementById('trend-line').innerHTML = `${data.currentGlucose.trend} <span>Last reading ${data.currentGlucose.minutesAgo} min ago</span>`;
+      
+      // Cap minutesAgo at 24 hours (1440 minutes)
+      const minutesAgo = Math.min(data.currentGlucose.minutesAgo || 0, 1440);
+      let timeText = '';
+      if (minutesAgo < 1) timeText = 'just now';
+      else if (minutesAgo < 60) timeText = `${minutesAgo} min ago`;
+      else {
+        const hours = Math.floor(minutesAgo / 60);
+        const mins = minutesAgo % 60;
+        timeText = mins > 0 ? `${hours}h ${mins}m ago` : `${hours}h ago`;
+      }
+      
+      document.getElementById('trend-line').innerHTML = `${data.currentGlucose.trend} <span>Last reading ${timeText}</span>`;
     }
 
     // Try to get ML-based risk, fall back to rule-based
@@ -131,6 +169,11 @@ async function loadDashboard() {
       });
     }
     if (contextHTML) document.getElementById('context-grid').innerHTML = contextHTML;
+    
+    // Update dashboard glucose chart
+    if (data.currentGlucose) {
+      updateDashboardGlucoseChart();
+    }
   }
 }
 
@@ -168,18 +211,244 @@ async function loadGlucoseData() {
   if (data && data.readings) {
     // Update stats
     if (data.readings.length > 0) {
-      document.getElementById('stat-current').textContent = data.readings[0].value;
-      const avg = Math.round(data.readings.reduce((sum, r) => sum + r.value, 0) / data.readings.length);
-      document.getElementById('stat-avg').textContent = avg;
+      const currentValue = parseFloat(data.readings[0].value);
+      document.getElementById('stat-current').textContent = isNaN(currentValue) ? '--' : currentValue;
+      
+      const sum = data.readings.reduce((sum, r) => sum + (parseFloat(r.value) || 0), 0);
+      const avg = data.readings.length > 0 ? Math.round(sum / data.readings.length) : 0;
+      document.getElementById('stat-avg').textContent = isNaN(avg) ? '--' : avg;
+      
       document.getElementById('stat-count').textContent = data.readings.length;
 
       // Calculate trend
       if (data.readings.length >= 2) {
-        const trend = data.readings[0].value > data.readings[1].value ? '↑ Rising' : data.readings[0].value < data.readings[1].value ? '↓ Falling' : '→ Stable';
+        const latest = parseFloat(data.readings[0].value);
+        const previous = parseFloat(data.readings[1].value);
+        let trend = '→ Stable';
+        if (latest > previous) trend = '↑ Rising';
+        else if (latest < previous) trend = '↓ Falling';
         document.getElementById('stat-trend').textContent = trend;
       }
+
+      // Update trend chart with real data
+      updateGlucoseTrendChart(data.readings);
     }
   }
+}
+
+function updateDashboardGlucoseChart() {
+  // Get the last 10 glucose readings for dashboard chart
+  const apiCall_local = apiCall;
+  (async () => {
+    const data = await apiCall_local('/glucose?limit=10');
+    if (!data || !data.readings) return;
+    
+    const readings = data.readings.slice().reverse(); // oldest first
+    if (readings.length < 2) return;
+    
+    const svg = document.getElementById('glucose-chart');
+    if (!svg) return;
+    
+    // Calculate scaling
+    const values = readings.map(r => r.value);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = Math.max(maxVal - minVal, 40);
+    
+    // Chart dimensions (preserveAspectRatio="none" so we use viewBox values)
+    const viewBox = svg.getAttribute('viewBox').split(' ');
+    const width = parseFloat(viewBox[2]);
+    const height = parseFloat(viewBox[3]);
+    const padding = 20;
+    const chartWidth = width - (padding * 2);
+    const chartHeight = height - (padding * 2);
+    
+    // Calculate points
+    const pointCount = readings.length;
+    const xStep = chartWidth / (pointCount - 1);
+    
+    let points = '';
+    let circles = '';
+    
+    readings.forEach((reading, index) => {
+      const x = padding + (index * xStep);
+      const normalizedValue = (reading.value - (minVal - range * 0.1)) / (range * 1.2);
+      const y = height - padding - (Math.max(0, Math.min(1, normalizedValue)) * chartHeight);
+      
+      points += `${x},${y} `;
+      const isLast = index === pointCount - 1;
+      circles += `<circle cx="${x}" cy="${y}" r="${isLast ? 5 : 3.5}"/>`;
+    });
+    
+    // Clear and update
+    svg.querySelectorAll('polyline, g[fill="#2f80ed"]').forEach(el => el.remove());
+    
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', '#2f80ed');
+    polyline.setAttribute('stroke-width', '3.5');
+    polyline.setAttribute('stroke-linejoin', 'round');
+    polyline.setAttribute('points', points.trim());
+    svg.appendChild(polyline);
+    
+    const circleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    circleGroup.setAttribute('fill', '#2f80ed');
+    circleGroup.innerHTML = circles;
+    svg.appendChild(circleGroup);
+  })();
+}
+
+function updateGlucoseTrendChart(readings) {
+  if (!readings || readings.length === 0) return;
+  
+  // Sort by timestamp ascending (oldest first)
+  const sorted = [...readings].reverse();
+  
+  // Limit to last 15 readings for chart
+  const chartData = sorted.slice(-15);
+  
+  if (chartData.length < 2) return;
+  
+  // Find min/max for scaling
+  const values = chartData.map(r => r.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = Math.max(maxVal - minVal, 50);
+  
+  // Chart dimensions
+  const width = 900;
+  const height = 300;
+  const padding = { top: 30, bottom: 40, left: 60, right: 30 };
+  const chartWidth = width - (padding.left + padding.right);
+  const chartHeight = height - (padding.top + padding.bottom);
+  
+  // Calculate points
+  const pointCount = chartData.length;
+  const xStep = chartWidth / (pointCount - 1);
+  
+  let points = '';
+  let circles = '';
+  let tooltips = '';
+  
+  chartData.forEach((reading, index) => {
+    const x = padding.left + (index * xStep);
+    const normalizedValue = (reading.value - (minVal - range * 0.1)) / (range * 1.2);
+    const y = height - padding.bottom - (Math.max(0, Math.min(1, normalizedValue)) * chartHeight);
+    
+    points += `${x},${y} `;
+    
+    // Add circles at each point
+    const isLast = index === pointCount - 1;
+    circles += `<circle cx="${x}" cy="${y}" r="${isLast ? 6 : 5}" class="glucose-point"/>`;
+    
+    // Add tooltip
+    const time = new Date(reading.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    tooltips += `<g class="tooltip-group" data-index="${index}">
+      <rect x="${x - 35}" y="${y - 50}" width="70" height="45" rx="4" fill="#1a2d3f" stroke="#00D9FF" stroke-width="1"/>
+      <text x="${x}" y="${y - 28}" text-anchor="middle" fill="#fff" font-size="13" font-weight="bold">${Math.round(reading.value)}</text>
+      <text x="${x}" y="${y - 12}" text-anchor="middle" fill="#738196" font-size="10">${time}</text>
+    </g>`;
+  });
+  
+  // Update SVG
+  const svg = document.getElementById('glucose-history-chart');
+  if (!svg) return;
+  
+  // Clear old elements
+  svg.querySelectorAll('polyline, .circles, .y-labels, .x-labels, .target-zone, .tooltip-group').forEach(el => el.remove());
+  
+  // Add target zone background (70-180 mg/dL)
+  const targetMin = 70;
+  const targetMax = 180;
+  const normalizedMin = (targetMin - (minVal - range * 0.1)) / (range * 1.2);
+  const normalizedMax = (targetMax - (minVal - range * 0.1)) / (range * 1.2);
+  const yMin = height - padding.bottom - (Math.max(0, Math.min(1, normalizedMin)) * chartHeight);
+  const yMax = height - padding.bottom - (Math.max(0, Math.min(1, normalizedMax)) * chartHeight);
+  
+  const targetZone = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  targetZone.setAttribute('x', padding.left);
+  targetZone.setAttribute('y', yMax);
+  targetZone.setAttribute('width', chartWidth);
+  targetZone.setAttribute('height', yMin - yMax);
+  targetZone.setAttribute('fill', '#1a4d2e');
+  targetZone.setAttribute('opacity', '0.2');
+  targetZone.classList.add('target-zone');
+  svg.appendChild(targetZone);
+  
+  // Add Y-axis labels
+  const yLabelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  yLabelsGroup.classList.add('y-labels');
+  for (let i = 0; i <= 4; i++) {
+    const val = Math.round(minVal - range * 0.1 + (i / 4) * range * 1.2);
+    const y = height - padding.bottom - ((i / 4) * chartHeight);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', padding.left - 10);
+    text.setAttribute('y', y + 4);
+    text.setAttribute('text-anchor', 'end');
+    text.setAttribute('fill', '#738196');
+    text.setAttribute('font-size', '11');
+    text.textContent = val;
+    yLabelsGroup.appendChild(text);
+  }
+  svg.appendChild(yLabelsGroup);
+  
+  // Add X-axis labels (times)
+  const xLabelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  xLabelsGroup.classList.add('x-labels');
+  for (let i = 0; i < pointCount; i += Math.ceil(pointCount / 5)) {
+    if (i < pointCount) {
+      const time = new Date(chartData[i].timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const x = padding.left + (i * xStep);
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', height - 10);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', '#738196');
+      text.setAttribute('font-size', '10');
+      text.textContent = time;
+      xLabelsGroup.appendChild(text);
+    }
+  }
+  svg.appendChild(xLabelsGroup);
+  
+  // Add polyline
+  const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  polyline.setAttribute('fill', 'none');
+  polyline.setAttribute('stroke', '#2f80ed');
+  polyline.setAttribute('stroke-width', '5');
+  polyline.setAttribute('stroke-linejoin', 'round');
+  polyline.setAttribute('points', points.trim());
+  svg.appendChild(polyline);
+  
+  // Add circles group
+  const circleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  circleGroup.setAttribute('fill', '#2f80ed');
+  circleGroup.classList.add('circles');
+  circleGroup.innerHTML = circles;
+  svg.appendChild(circleGroup);
+  
+  // Add tooltip group
+  const tooltipGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  tooltipGroup.innerHTML = tooltips;
+  svg.appendChild(tooltipGroup);
+  
+  // Hide tooltips by default
+  svg.querySelectorAll('.tooltip-group').forEach(el => el.style.display = 'none');
+  
+  // Show tooltip on hover
+  svg.querySelectorAll('.glucose-point').forEach((circle, idx) => {
+    circle.addEventListener('mouseenter', () => {
+      svg.querySelectorAll('.tooltip-group').forEach(el => el.style.display = 'none');
+      svg.querySelectorAll('.glucose-point').forEach(c => c.style.opacity = '0.4');
+      const tooltips = svg.querySelectorAll('.tooltip-group');
+      if (tooltips[idx]) tooltips[idx].style.display = 'block';
+      circle.style.opacity = '1';
+    });
+    circle.addEventListener('mouseleave', () => {
+      svg.querySelectorAll('.tooltip-group').forEach(el => el.style.display = 'none');
+      svg.querySelectorAll('.glucose-point').forEach(c => c.style.opacity = '1');
+    });
+  });
 }
 
 // Meal section
@@ -595,15 +864,17 @@ function startCGMAutoSync() {
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
-  loadUserProfile();
-  loadDashboard();
-  loadGlucoseData();
-  loadMealHistory();
-  loadInsulinHistory();
-  loadRiskEngine();
-  loadTimeline();
-  loadCGMDevices();
-  startCGMAutoSync();
+  loadUserProfile().then(() => {
+    // After user profile loads, then load other data
+    loadDashboard();
+    loadGlucoseData();
+    loadMealHistory();
+    loadInsulinHistory();
+    loadRiskEngine();
+    loadTimeline();
+    loadCGMDevices();
+    startCGMAutoSync();
+  });
 
   // Setup navigation buttons AFTER DOM is ready
   document.querySelectorAll("[data-page]").forEach(b => b.addEventListener("click", () => go(b.dataset.page)));

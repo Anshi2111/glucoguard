@@ -26,16 +26,17 @@ class Meal {
   }
 
   static async findByUserId(userId, limit = 50) {
+    const limitVal = Math.min(Math.max(parseInt(limit) || 50, 1), 1000);
     const query = `
       SELECT id, name, estimated_carbs, notes, image_url, timestamp, created_at
       FROM meals
       WHERE user_id = ?
       ORDER BY timestamp DESC
-      LIMIT ?
+      LIMIT ${limitVal}
     `;
     const connection = await pool.getConnection();
     try {
-      const result = await connection.execute(query, [userId, limit]);
+      const result = await connection.execute(query, [userId]);
       return result[0];
     } finally {
       connection.release();

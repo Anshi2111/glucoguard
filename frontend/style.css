@@ -121,7 +121,12 @@ body {
 }
 
 .sidebar-bottom {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
 }
 
 nav {
