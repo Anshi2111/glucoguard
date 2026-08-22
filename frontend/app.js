@@ -621,18 +621,10 @@ window.addEventListener('DOMContentLoaded', () => {
 // PREMIUM UI ANIMATIONS
 // ===================================
 
-// Animation: Glucose graph line draw
+// Animation: Glucose graph line draw (disabled - causes display issues)
 function animateGlucoseChart() {
-  const chart = document.getElementById('glucose-chart');
-  if (chart) {
-    chart.parentElement.classList.add('glucose-chart-animate');
-    const polylines = chart.querySelectorAll('polyline');
-    polylines.forEach(p => {
-      const len = p.getTotalLength ? p.getTotalLength() : 1000;
-      p.style.strokeDasharray = len;
-      p.style.strokeDashoffset = len;
-    });
-  }
+  // Glucose chart animation disabled to preserve data display
+  // Can be re-enabled with proper SVG handling
 }
 
 // Animation: Risk ring reveal

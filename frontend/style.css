@@ -1186,40 +1186,9 @@ nav button.safety-link:hover {
 }
 
 /* ================================================
-   ANIMATION 1: GLUCOSE GRAPH LINE DRAW
+   ANIMATION 1: GLUCOSE GRAPH LINE DRAW (DISABLED)
    ================================================ */
-@keyframes drawGlucoseLine {
-  from {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    opacity: 0;
-  }
-  to {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInPoint {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.glucose-chart-animate polyline {
-  animation: drawGlucoseLine 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.glucose-chart-animate circle {
-  animation: fadeInPoint 300ms ease-out forwards;
-  animation-delay: 900ms;
-}
+/* Disabled - causes SVG text rendering issues */
 
 /* ================================================
    ANIMATION 2: RISK RING REVEAL
