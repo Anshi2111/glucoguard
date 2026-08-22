@@ -449,6 +449,7 @@ document.getElementById('add-meal-btn')?.addEventListener('click', async () => {
     document.getElementById('meal-notes').value = '';
     document.getElementById('food-results').innerHTML = '';
     document.getElementById('food-search').value = '';
+    document.getElementById('selected-food-section').classList.remove('visible');
     loadMealHistory();
     loadDashboard();
   }
@@ -538,6 +539,7 @@ function selectFood(id, name, carbs, region) {
   document.getElementById('meal-servings').value = '1';
   calculateCarbs();
   document.getElementById('food-results').innerHTML = '';
+  document.getElementById('selected-food-section').classList.add('visible');
   showToast(`Selected: ${name}`);
 }
 

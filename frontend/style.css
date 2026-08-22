@@ -30,11 +30,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ===== GLOBAL TEXT SIZES - INCREASED ===== */
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
+  font-size: 15px;
 }
 
 /* ===== APP CONTAINER ===== */
@@ -76,14 +78,14 @@ body {
 }
 
 #page-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-primary);
 }
 
 .subtitle {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-muted);
 }
 
@@ -165,7 +167,7 @@ body {
 /* ===== PAGE STRUCTURE ===== */
 .page {
   display: none;
-  padding: 32px 24px;
+  padding: 40px 32px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -405,9 +407,9 @@ body {
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: var(--text-secondary);
@@ -479,18 +481,22 @@ body {
 }
 
 .action-icon {
-  font-size: 24px;
+  font-size: 32px;
+  line-height: 1;
+  display: block;
 }
 
 .action-text strong {
   display: block;
-  font-size: 13px;
-  margin-bottom: 2px;
+  font-size: 14px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  margin-top: 0;
 }
 
 .action-text small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -504,21 +510,21 @@ body {
 }
 
 .form-card h3 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   color: var(--text-primary);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -531,9 +537,9 @@ body {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 15px;
   font-family: inherit;
   transition: border-color 0.2s;
 }
@@ -586,9 +592,9 @@ body {
   background: var(--accent);
   color: var(--bg-primary);
   border: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -617,41 +623,41 @@ body {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 16px;
+  padding: 20px;
   text-align: center;
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .stat-value {
   display: block;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--accent);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .stat-unit {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 /* ===== CHARTS ===== */
 .chart-section {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .chart-section h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: var(--text-secondary);
@@ -668,13 +674,13 @@ body {
 
 /* ===== HISTORY LISTS ===== */
 .history-section {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .history-section h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: var(--text-secondary);
@@ -1186,10 +1192,25 @@ body {
 /* ===== SELECTED FOOD SECTION ===== */
 .selected-food-section {
   display: none;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  animation: slideDown 0.3s ease-out;
 }
 
 .selected-food-section.visible {
   display: block;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== BOTTOM NAVIGATION ===== */
